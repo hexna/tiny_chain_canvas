@@ -34,6 +34,10 @@ List<(Offset, Offset)> dashSegments(
   }
 
   // 奇数长度按 SVG 语义重复一遍补齐，这样「实线 / 空白」仍然交替。
+  //
+  // 注意：这一步对结果没有任何影响——下面的循环是 `cycle[index % cycle.length]`，
+  // 而 `2n` 恒为 `n` 的倍数，补齐前后每个 index 取到的元素完全相同。写上它只是为了让
+  // 「SVG 奇数长度自重复」这条语义在代码里显式可见（保留行为，不改判定）。
   final cycle =
       normalized.length.isOdd ? [...normalized, ...normalized] : normalized;
 

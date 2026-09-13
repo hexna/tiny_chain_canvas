@@ -114,6 +114,11 @@ SkillTreeCanvasTheme(
 Dashes are measured in screen pixels, so the rhythm does not change with zoom. Purely additive:
 with `const SkillTreeCanvasTheme()` the canvas renders exactly as before.
 
+One gotcha: a pattern whose dashed part is zero (`dashPattern: [0, 6]`) draws an **invisible
+edge** — that matches SVG semantics and is deliberately not special-cased back to a solid line.
+`color` is likewise ignored while the canvas is dimming unrelated edges (it uses
+`outlineVariant` then), and is still multiplied by the 0.38 / 0.9 highlight opacity otherwise.
+
 ### `SkillTreeCanvasSettings`
 
 | Parameter | Default | Feel |

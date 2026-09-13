@@ -108,6 +108,10 @@ SkillTreeCanvasTheme(
 虚线按屏幕像素切分，所以节奏不随缩放变化。这个钩子是纯增量的：
 `const SkillTreeCanvasTheme()` 下的渲染结果与 0.1.0 完全一致。
 
+一个坑：虚线的实线部分为 0 时（如 `dashPattern: [0, 6]`）会画出「看不见的连线」——
+这与 SVG 语义一致，不会回退成实线。同理，当画布正在变暗「不相干」的连线时 `color` 会被忽略
+（改用 `outlineVariant`）；其余情况下自定义色仍会被乘上 0.38 / 0.9 的高亮透明度。
+
 ### `SkillTreeCanvasSettings`
 
 | 参数 | 默认 | 手感 |

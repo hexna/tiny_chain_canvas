@@ -123,12 +123,16 @@ void main() {
       expect(_totalLength(segments), closeTo(8, 1e-9));
     });
 
-    test('奇数长度 pattern 按 SVG 语义补齐（自身重复一遍）', () {
+    test('奇数长度 pattern 按循环取模，等价 SVG 的自重复语义', () {
       const from = Offset(0, 0);
       const to = Offset(20, 0);
       final segments = dashSegments(from, to, const [6, 4, 2]);
 
-      // 补齐后周期 = [6, 4, 2, 6, 4, 2]，总周期 24。
+      // 注意：本用例不构成对实现里「奇数长度重复一遍补齐」那一步的判别——
+      // 循环用的是取模，取模本身就带周期性，把补齐删掉这些断言照样通过。
+      // 这里锁住的只是「奇数长度 pattern 走的是 SVG 式的循环节奏」这个外部语义。
+      //
+      // 等价周期 = [6, 4, 2, 6, 4, 2]，总周期 24。
       expect(segments, hasLength(3));
       _expectSegment(segments[0], const Offset(0, 0), const Offset(6, 0));
       _expectSegment(segments[1], const Offset(10, 0), const Offset(12, 0));

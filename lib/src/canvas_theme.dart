@@ -30,9 +30,14 @@ class SkillLinkStyle {
   });
 
   /// 为空 → 用 `SkillTreeCanvasTheme.levelColor(level)`。
+  ///
+  /// 两个隐含行为：
+  /// - 连线处于「不相干 / 变暗」状态（当前高亮的是别的节点）时**始终**用
+  ///   `colorScheme.outlineVariant.withOpacity(0.22)`，这里的自定义色会被忽略；
+  /// - 连线相连 / 高亮时，自定义色仍会被套上透明度：无高亮 0.38、有高亮 0.9。
   final Color? color;
 
-  /// 线宽，默认 1.5（与改动前的写死值一致）。
+  /// 线宽，默认 1.5（与改动前的写死值一致）。任何状态下都原样使用。
   final double strokeWidth;
 
   /// 虚线节奏：实线长 / 空白长交替（如 `[6, 4]`）。为空或长度不足 / 全非正 → 实线。

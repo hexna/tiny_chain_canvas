@@ -217,6 +217,67 @@ void main() {
         kSkillTreeLevelColors[0].withOpacity(0.38));
   });
 
+  test('自定义 linkStyleBuilder 的颜色与线宽真的落到连线 Paint 上', () {
+    const customColor = Color(0xFF123456);
+    final canvas = _RecordingCanvas();
+
+    SkillTreePainter(
+      nodes: _nodes,
+      links: _links,
+      theme: SkillTreeCanvasTheme(
+        linkStyleBuilder: (link, scheme) => const SkillLinkStyle(
+          color: customColor,
+          strokeWidth: 3,
+        ),
+      ),
+      colorScheme: const ColorScheme.light(),
+      offset: Offset.zero,
+      scale: 1,
+      positions: const {
+        1: Offset(200, 200),
+        2: Offset(320, 160),
+        3: Offset(320, 260),
+      },
+      highlightedId: null,
+      textDirection: TextDirection.ltr,
+    ).paint(canvas, const Size(600, 480));
+
+    // 实线：每条连线仍然只画一笔。
+    expect(canvas.lines, hasLength(2));
+    for (final line in canvas.lines) {
+      // 自定义线宽必须原样落到 Paint 上（不能被写死的 1.5 覆盖）。
+      expect(line.$3.strokeWidth, 3);
+      // 自定义色必须被采用；无高亮时仍套 0.38 透明度。
+      expect(line.$3.color, customColor.withOpacity(0.38));
+    }
+  });
+
+  test('dashPattern 生效时逐段描线，为空时仍是一笔', () {
+    int drawLineCount(SkillLinkStyle style) {
+      final canvas = _RecordingCanvas();
+      SkillTreePainter(
+        nodes: _nodes,
+        links: const [SkillLink(parentId: 1, childId: 2)],
+        theme: SkillTreeCanvasTheme(
+          linkStyleBuilder: (link, scheme) => style,
+        ),
+        colorScheme: const ColorScheme.light(),
+        offset: Offset.zero,
+        scale: 1,
+        positions: const {1: Offset(200, 200), 2: Offset(320, 160)},
+        highlightedId: null,
+        textDirection: TextDirection.ltr,
+      ).paint(canvas, const Size(600, 480));
+      return canvas.lines.length;
+    }
+
+    expect(drawLineCount(const SkillLinkStyle()), 1);
+    expect(
+      drawLineCount(const SkillLinkStyle(dashPattern: [6, 4])),
+      greaterThan(1),
+    );
+  });
+
   test('默认主题的 linkStyleBuilder 返回实线样式', () {
     const theme = SkillTreeCanvasTheme();
     final style = theme.linkStyleBuilder(
