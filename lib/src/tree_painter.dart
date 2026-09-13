@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'canvas_theme.dart';
+import 'dash.dart';
 import 'models.dart';
 
 /// 节点卡片的基准尺寸（世界坐标，绘制时再乘缩放）。
@@ -73,15 +74,23 @@ class SkillTreePainter extends CustomPainter {
       final edgeLevel = highlightedId == null
           ? parent.level
           : _nodeMap[highlightedId]?.level ?? parent.level;
+      final style = theme.linkStyleFor(link, colorScheme);
       final edgePaint = Paint()
         ..color = connected
-            ? theme
-                .levelColor(edgeLevel)
+            ? (style.color ?? theme.levelColor(edgeLevel))
                 .withOpacity(highlightedId == null ? 0.38 : 0.9)
             : colorScheme.outlineVariant.withOpacity(0.22)
-        ..strokeWidth = 1.5;
-      canvas.drawLine(
-          _screenPosition(parent), _screenPosition(child), edgePaint);
+        ..strokeWidth = style.strokeWidth;
+      final from = _screenPosition(parent);
+      final to = _screenPosition(child);
+      final dashPattern = style.dashPattern;
+      if (dashPattern == null) {
+        canvas.drawLine(from, to, edgePaint);
+      } else {
+        for (final segment in dashSegments(from, to, dashPattern)) {
+          canvas.drawLine(segment.$1, segment.$2, edgePaint);
+        }
+      }
     }
 
     for (final node in nodes) {

@@ -20,6 +20,46 @@ typedef SkillTreeNodeStyleBuilder = SkillTreeNodeStyle Function(
   ColorScheme scheme,
 );
 
+/// 一条连线的画法。颜色为空时按层级色板取色（也就是现在默认的行为）。
+@immutable
+class SkillLinkStyle {
+  const SkillLinkStyle({
+    this.color,
+    this.strokeWidth = 1.5,
+    this.dashPattern,
+  });
+
+  /// 为空 → 用 `SkillTreeCanvasTheme.levelColor(level)`。
+  final Color? color;
+
+  /// 线宽，默认 1.5（与改动前的写死值一致）。
+  final double strokeWidth;
+
+  /// 虚线节奏：实线长 / 空白长交替（如 `[6, 4]`）。为空或长度不足 / 全非正 → 实线。
+  /// 奇数长度按 SVG 语义重复一遍补齐。
+  final List<double>? dashPattern;
+}
+
+/// 连线配色 / 线型钩子：想按「连线状态」改画法时改写它。
+///
+/// 典型用法是「连续关系画实线、中断关系画虚线」：
+/// ```dart
+/// SkillLinkStyle myLinkStyle(SkillLink link, ColorScheme scheme) {
+///   final broken = isBroken(link); // 由宿主自己判断
+///   return broken
+///       ? const SkillLinkStyle(dashPattern: [6, 4])
+///       : const SkillLinkStyle(); // 实线，颜色仍走层级色板
+/// }
+/// ```
+typedef SkillLinkStyleBuilder = SkillLinkStyle Function(
+  SkillLink link,
+  ColorScheme scheme,
+);
+
+/// 默认连线样式：实线、不覆盖颜色（即按层级色板取色）。
+SkillLinkStyle defaultSkillLinkStyle(SkillLink link, ColorScheme scheme) =>
+    const SkillLinkStyle();
+
 /// 默认层级配色（level 1 起，超出范围的层级取最后一色）。
 const List<Color> kSkillTreeLevelColors = [
   Color(0xFFE53935),
@@ -58,6 +98,7 @@ class SkillTreeCanvasTheme {
   const SkillTreeCanvasTheme({
     this.levelColors = kSkillTreeLevelColors,
     this.nodeStyleBuilder = defaultSkillTreeNodeStyle,
+    this.linkStyleBuilder = defaultSkillLinkStyle,
     this.backgroundColors,
     this.labelStyle,
   });
@@ -67,6 +108,10 @@ class SkillTreeCanvasTheme {
 
   /// 节点配色钩子。
   final SkillTreeNodeStyleBuilder nodeStyleBuilder;
+
+  /// 连线样式钩子。默认 [defaultSkillLinkStyle]，与改动前的渲染完全一致
+  /// （实线、层级色板取色、线宽 1.5）。
+  final SkillLinkStyleBuilder linkStyleBuilder;
 
   /// 画布背景渐变（左上 → 右下）。为空时取 `surface → surfaceContainerLow`。
   final List<Color>? backgroundColors;
@@ -83,4 +128,7 @@ class SkillTreeCanvasTheme {
 
   SkillTreeNodeStyle styleFor(SkillNode node, ColorScheme scheme) =>
       nodeStyleBuilder(node, scheme);
+
+  SkillLinkStyle linkStyleFor(SkillLink link, ColorScheme scheme) =>
+      linkStyleBuilder(link, scheme);
 }

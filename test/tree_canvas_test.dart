@@ -16,6 +16,7 @@ const _links = [
 Widget _host({
   SkillTreeCanvasController? controller,
   SkillTreeSettingsStore? store,
+  SkillTreeCanvasTheme theme = const SkillTreeCanvasTheme(),
   ValueChanged<SkillNode>? onNodeTap,
   VoidCallback? onBackgroundTap,
   ValueChanged<Map<int, Offset>>? onNodeDragEnd,
@@ -26,6 +27,7 @@ Widget _host({
         nodes: _nodes,
         links: _links,
         controller: controller,
+        theme: theme,
         settingsStore: store,
         onNodeTap: onNodeTap,
         onBackgroundTap: onBackgroundTap,
@@ -39,6 +41,19 @@ Future<void> _runFrames(WidgetTester tester, int frames) async {
   for (var index = 0; index < frames; index++) {
     await tester.pump(const Duration(milliseconds: 16));
   }
+}
+
+/// 只记录 `drawLine` 的假画布：其余绘制调用一律忽略。
+/// 连线段是画布里唯一会调用 `drawLine` 的东西，所以拿它验连线画法最省事。
+class _RecordingCanvas implements Canvas {
+  final List<(Offset, Offset, Paint)> lines = [];
+
+  @override
+  void drawLine(Offset p1, Offset p2, Paint paint) =>
+      lines.add((p1, p2, paint));
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) => null;
 }
 
 void main() {
@@ -168,5 +183,79 @@ void main() {
     await tester.pump(const Duration(milliseconds: 16));
 
     expect(tester.takeException(), isNull);
+  });
+
+  test('默认主题的连线画法与改动前一致（实线 / 层级色 0.38 / 线宽 1.5）', () {
+    const theme = SkillTreeCanvasTheme();
+    const scheme = ColorScheme.light();
+    final canvas = _RecordingCanvas();
+
+    SkillTreePainter(
+      nodes: _nodes,
+      links: _links,
+      theme: theme,
+      colorScheme: scheme,
+      offset: Offset.zero,
+      scale: 1,
+      positions: const {
+        1: Offset(200, 200),
+        2: Offset(320, 160),
+        3: Offset(320, 260),
+      },
+      highlightedId: null,
+      textDirection: TextDirection.ltr,
+    ).paint(canvas, const Size(600, 480));
+
+    // 两条连线各画一笔，没有因为虚线被切开。
+    expect(canvas.lines, hasLength(2));
+    for (final line in canvas.lines) {
+      expect(line.$1, isNot(line.$2));
+      expect(line.$3.strokeWidth, 1.5);
+    }
+    // 父节点是 level 1，取色板第一色；无高亮时透明度 0.38。
+    expect(canvas.lines.first.$3.color,
+        kSkillTreeLevelColors[0].withOpacity(0.38));
+  });
+
+  test('默认主题的 linkStyleBuilder 返回实线样式', () {
+    const theme = SkillTreeCanvasTheme();
+    final style = theme.linkStyleBuilder(
+      const SkillLink(parentId: 1, childId: 2),
+      const ColorScheme.light(),
+    );
+
+    expect(style.dashPattern, isNull);
+    expect(style.color, isNull);
+    expect(style.strokeWidth, 1.5);
+  });
+
+  testWidgets('带 dashPattern 的 linkStyleBuilder 能正常渲染，不抛异常', (tester) async {
+    await tester.pumpWidget(_host(
+      theme: SkillTreeCanvasTheme(
+        linkStyleBuilder: (link, scheme) =>
+            const SkillLinkStyle(dashPattern: [6, 4]),
+      ),
+    ));
+    await _runFrames(tester, 240);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(CustomPaint), findsWidgets);
+  });
+
+  testWidgets('按连线状态切换实线 / 虚线也能量好', (tester) async {
+    await tester.pumpWidget(_host(
+      theme: SkillTreeCanvasTheme(
+        linkStyleBuilder: (link, scheme) => link.childId == 2
+            ? const SkillLinkStyle(dashPattern: [6, 4])
+            : const SkillLinkStyle(
+                color: Color(0xFF00ACC1),
+                strokeWidth: 2.5,
+              ),
+      ),
+    ));
+    await _runFrames(tester, 240);
+
+    expect(tester.takeException(), isNull);
+    expect(find.byType(SkillTreeCanvas), findsOneWidget);
   });
 }

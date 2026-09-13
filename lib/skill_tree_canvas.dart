@@ -6,6 +6,7 @@ library;
 export 'src/canvas_controller.dart';
 export 'src/canvas_settings.dart';
 export 'src/canvas_theme.dart';
+export 'src/dash.dart';
 export 'src/drag_group.dart';
 export 'src/force_layout.dart';
 export 'src/layout.dart';
