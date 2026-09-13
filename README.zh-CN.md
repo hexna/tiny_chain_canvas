@@ -57,7 +57,7 @@ controller.addListener(() => print(controller.scale));
 | --- | --- |
 | `nodes` / `links` | 图数据，`id` 唯一即可 |
 | `controller` | 可选，视图遥控器 |
-| `theme` | 配色（层级色板、节点配色钩子、背景渐变、文字样式） |
+| `theme` | 配色（层级色板、节点配色钩子、连线样式钩子、背景渐变、文字样式） |
 | `settings` / `settingsStore` | 物理参数；给了 store 就自动读改写 |
 | `showLevelBadge` | 节点文字是否带 `层级.` 前缀 |
 | `initialDragNodesEnabled` | 初始是否处于拖动节点模式 |
@@ -80,6 +80,7 @@ SkillLink(parentId: 1, childId: 2)   // 有向：parent → child
 | --- | --- |
 | `levelColors` | 连线与高亮节点用的层级色板（默认 8 色） |
 | `nodeStyleBuilder` | **节点配色钩子**，改它就能按记忆度 / 掌握度 / 完成度上色 |
+| `linkStyleBuilder` | **连线样式钩子**，改它就能按连线状态画实线 / 虚线 |
 | `backgroundColors` | 画布背景渐变，默认 `surface → surfaceContainerLow` |
 | `labelStyle` | 节点文字基准样式（字体族 / 字重 / 字距；颜色与字号由画布覆盖） |
 
@@ -90,6 +91,22 @@ SkillTreeCanvasTheme(
       : defaultSkillTreeNodeStyle(node, scheme),
 )
 ```
+
+#### 按状态改连线（连续实线 / 中断虚线）
+
+`linkStyleBuilder` 对每条连线返回一个 `SkillLinkStyle`。`color` 留空就仍按层级色板取色；
+`dashPattern` 是虚线节奏（`[实线长, 空白长, …]`，奇数长度按 SVG 语义重复一遍补齐）：
+
+```dart
+SkillTreeCanvasTheme(
+  linkStyleBuilder: (link, scheme) => isBroken(link)
+      ? const SkillLinkStyle(dashPattern: [6, 4])          // 中断：虚线
+      : const SkillLinkStyle(),                            // 连续：实线（默认观感）
+)
+```
+
+虚线按屏幕像素切分，所以节奏不随缩放变化。这个钩子是纯增量的：
+`const SkillTreeCanvasTheme()` 下的渲染结果与 0.1.0 完全一致。
 
 ### `SkillTreeCanvasSettings`
 

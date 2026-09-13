@@ -1,7 +1,7 @@
 name: skill_tree_canvas
 description: A force-directed skill-tree canvas for Flutter with level-gravity columns, pan and
   zoom, node dragging and tunable physics, and zero third-party dependencies.
-version: 0.1.0
+version: 0.2.0
 homepage: https://github.com/hexna/skill_tree_canvas
 repository: https://github.com/hexna/skill_tree_canvas
 issue_tracker: https://github.com/hexna/skill_tree_canvas/issues

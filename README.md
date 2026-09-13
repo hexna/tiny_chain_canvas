@@ -62,7 +62,7 @@ controller.addListener(() => print(controller.scale));
 | --- | --- |
 | `nodes` / `links` | The graph; `id` just has to be unique |
 | `controller` | Optional remote control for the view |
-| `theme` | Colours (level palette, node style hook, background gradient, label style) |
+| `theme` | Colours (level palette, node style hook, link style hook, background gradient, label style) |
 | `settings` / `settingsStore` | Physics; pass a store and it is read/written for you |
 | `showLevelBadge` | Prefix node labels with `level.` |
 | `initialDragNodesEnabled` | Start in node-dragging mode |
@@ -85,6 +85,7 @@ SkillLink(parentId: 1, childId: 2)   // directed: parent → child
 | --- | --- |
 | `levelColors` | Palette for edges and highlighted nodes (8 colours by default) |
 | `nodeStyleBuilder` | **The node colour hook** — use it for mastery / memory / progress colours |
+| `linkStyleBuilder` | **The link style hook** — use it for continuous-solid / interrupted-dashed edges |
 | `backgroundColors` | Canvas gradient, defaults to `surface → surfaceContainerLow` |
 | `labelStyle` | Base label style (font family, weight, letter spacing; colour and size are overridden) |
 
@@ -95,6 +96,23 @@ SkillTreeCanvasTheme(
       : defaultSkillTreeNodeStyle(node, scheme),
 )
 ```
+
+#### Per-link styling (continuous solid / interrupted dashed)
+
+`linkStyleBuilder` returns a `SkillLinkStyle` per link. Leave `color` null to keep the level
+palette, and set `dashPattern` for a dashed edge (`[dash, gap, …]`, odd-length patterns repeat
+once, SVG style):
+
+```dart
+SkillTreeCanvasTheme(
+  linkStyleBuilder: (link, scheme) => isBroken(link)
+      ? const SkillLinkStyle(dashPattern: [6, 4])          // interrupted
+      : const SkillLinkStyle(),                            // continuous (default look)
+)
+```
+
+Dashes are measured in screen pixels, so the rhythm does not change with zoom. Purely additive:
+with `const SkillTreeCanvasTheme()` the canvas renders exactly as before.
 
 ### `SkillTreeCanvasSettings`
 
@@ -133,7 +151,8 @@ lib/
     ├── force_layout.dart       # one force-directed step (repulsion / collision / springs / level gravity / centering)
     ├── drag_group.dart         # drag groups (descendants / connected component / translate)
     ├── canvas_settings.dart    # physics settings + persistence interface
-    ├── canvas_theme.dart       # colours and the colour hook
+    ├── canvas_theme.dart       # colours and the colour hooks
+    ├── dash.dart               # pure dash splitting helper
     ├── canvas_controller.dart  # view remote control
     ├── physics_dialog.dart     # the "canvas physics" panel
     ├── tree_canvas.dart        # the widget: gestures, simulation, hit testing

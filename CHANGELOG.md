@@ -2,6 +2,19 @@
 
 本项目遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，版本号用 [语义化版本](https://semver.org/lang/zh-CN/)。
 
+## [0.2.0] - 2026-09-13
+
+### Added
+
+- `SkillLinkStyle`：单条连线的画法（颜色、线宽、虚线节奏 `dashPattern`）。
+- `SkillLinkStyleBuilder` 与 `SkillTreeCanvasTheme.linkStyleBuilder`：连线样式钩子，
+  可以按连线状态改画法（例如「连续关系实线、中断关系虚线」）。
+- `dashSegments`：把线段按虚线节奏切成若干实线段的纯函数，按屏幕坐标切分，
+  节奏不随缩放变化。
+
+**向后兼容：默认主题渲染不变**——`const SkillTreeCanvasTheme()` 仍走实线、层级色板取色、
+线宽 1.5，与 0.1.0 完全一致。
+
 ## [0.1.0] - 2026-09-12
 
 首个版本，从卡片大师（SkillGrove）Flutter 版的技能树画布中剥离。

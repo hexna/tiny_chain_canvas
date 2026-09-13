@@ -154,6 +154,7 @@ a 260 ms delay on single taps — acceptable for a canvas surface.
 | --- | --- |
 | Node colours by memory / mastery / progress | `theme.nodeStyleBuilder` |
 | Font family, letter spacing | `theme.labelStyle` |
+| Per-link solid / dashed edges | `theme.linkStyleBuilder` |
 | Level palette | `theme.levelColors` |
 | Canvas background | `theme.backgroundColors` |
 | Persisting physics settings | `settingsStore` |

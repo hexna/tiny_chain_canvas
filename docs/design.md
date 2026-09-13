@@ -133,6 +133,7 @@ maxMovement < 0.35 && maxVelocity < 0.35 连续 8 帧 → 速度清零 + 停 tic
 | --- | --- |
 | 节点按记忆度 / 掌握度上色 | `theme.nodeStyleBuilder` |
 | 字体族、字距 | `theme.labelStyle` |
+| 按状态改连线（实线 / 虚线） | `theme.linkStyleBuilder` |
 | 层级色板 | `theme.levelColors` |
 | 画布背景 | `theme.backgroundColors` |
 | 参数持久化 | `settingsStore` |
