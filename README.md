@@ -1,6 +1,6 @@
 # skill_tree_canvas
 
-[![CI](https://github.com/hexna/skill_tree_canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/hexna/skill_tree_canvas/actions/workflows/ci.yml)
+[![CI](https://github.com/hexna/tiny_chain_canvas/actions/workflows/ci.yml/badge.svg)](https://github.com/hexna/tiny_chain_canvas/actions/workflows/ci.yml)
 
 English | [中文](README.zh-CN.md)
 
